@@ -1,0 +1,9 @@
+---
+
+ - name: installDocker
+   hosts:
+     - swarm_nodes_manager
+     - swarm_nodes_worker
+   roles:
+     - installDocker 
+...

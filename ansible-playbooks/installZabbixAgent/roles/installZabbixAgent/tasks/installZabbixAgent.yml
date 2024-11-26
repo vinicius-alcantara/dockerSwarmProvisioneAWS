@@ -1,0 +1,144 @@
+---
+
+ - name: Download All Zabbix Package
+   ansible.builtin.get_url:
+     url: https://repo.zabbix.com/zabbix/5.0/ubuntu/pool/main/z/zabbix/zabbix-agent_5.0.24-1%2Bubuntu22.04_amd64.deb
+     dest: /root/zabbix-agent_5.0.24-1%2Bubuntu22.04_amd64.deb
+   when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+ - name: Install Package
+   shell: dpkg -i /root/zabbix-agent_5.0.24-1%2Bubuntu22.04_amd64.deb
+   when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+# - name: Update All Packages
+#   shell: apt-get update -y
+#   when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+ - name: Update All Packages
+   apt:
+     name: "*"
+     update_cache: yes
+     state: latest
+   when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+ - name: Install Zabbix Agent Package - Debian/Ubuntu
+   apt: 
+     name: zabbix-agent
+     state: present
+   when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+ - name: Delete Package Downloaded
+   file:
+     path: /root/zabbix-agent_5.0.24-1%2Bubuntu22.04_amd64.deb
+     state: absent
+   when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+ - name: Install Zabbix Agent Repo - Redhat/Centos
+   yum:
+     name: https://repo.zabbix.com/zabbix/5.0/rhel/7/x86_64/zabbix-release-5.0-1.el7.noarch.rpm
+     state: present
+   when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+
+ - name: Install Zabbix Agent Package - Redhat/Centos
+   yum:
+     name: zabbix-agent
+     state: present
+   when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+
+ - name: Zabbix Agent Config Path
+   shell: find /etc -iname "zabbix_agentd.conf" -type "f"
+   register: path_zabbix_agent_etc
+
+ - name: Zabbix Agent Config Path
+   shell: find /usr -iname "zabbix_agentd.conf" -type "f"
+   register: path_zabbix_agent_usr
+
+ - name: Config Server 
+   ansible.builtin.lineinfile:
+     path: "{{ path_zabbix_agent_etc.stdout }}"
+     regexp: '^Server='
+     insertafter: '^Server='
+     line: 'Server=10.40.2.25'
+   ignore_errors: yes
+   failed_when: false
+   when: '"{{ path_zabbix_agent_etc.stdout }}" == "/etc/zabbix_agentd.conf" or "{{ path_zabbix_agent_etc.stdout }}" == "/etc/zabbix/zabbix_agentd.conf"'
+
+ - name: Config Server 
+   ansible.builtin.lineinfile:
+     path: "{{ path_zabbix_agent_usr.stdout }}"
+     regexp: '^Server='
+     insertafter: '^Server='
+     line: 'Server=10.40.2.25'
+   ignore_errors: yes
+   failed_when: false
+   when: '"{{ path_zabbix_agent_usr.stdout }}" == "/usr/local/zabbix/etc/zabbix_agentd.conf"'
+
+ - name: Config Server Active
+   ansible.builtin.lineinfile:
+     path: "{{ path_zabbix_agent_etc.stdout }}"
+     regexp: '^ServerActive='
+     insertafter: '^ServerActive='
+     line: 'ServerActive=10.40.2.25'
+   ignore_errors: yes
+   failed_when: false
+   when: '"{{ path_zabbix_agent_etc.stdout }}" == "/etc/zabbix_agentd.conf" or "{{ path_zabbix_agent_etc.stdout }}" == "/etc/zabbix/zabbix_agentd.conf"'
+
+ - name: Config Server Active
+   ansible.builtin.lineinfile:
+     path: "{{ path_zabbix_agent_usr.stdout }}"
+     regexp: '^ServerActive='
+     insertafter: '^ServerActive='
+     line: 'ServerActive=10.40.2.25'
+   ignore_errors: yes
+   failed_when: false
+   when: '"{{ path_zabbix_agent_usr.stdout }}" == "/usr/local/zabbix/etc/zabbix_agentd.conf"'
+
+ - name: Get hostname VM
+   shell: cat /etc/hostname
+   register: hostname_vm
+
+ - name: Config Hostname
+   lineinfile:
+     path: "{{ path_zabbix_agent_etc.stdout }}"
+     regexp: '^Hostname='
+     insertafter: '^Hostname='
+     line: 'Hostname={{ hostname_vm.stdout }}'
+   when: '"{{ hostname_vm.stdout }}" != "centos7-template.rmansur.com.br" and "{{ path_zabbix_agent_etc.stdout }}" == "/etc/zabbix_agentd.conf" or "{{ path_zabbix_agent_etc.stdout }}" == "/etc/zabbix/zabbix_agentd.conf"'
+
+ - name: Config Hostname
+   lineinfile:
+     path: "{{ path_zabbix_agent_usr.stdout }}"
+     regexp: '^Hostname='
+     insertafter: '^Hostname='
+     line: 'Hostname={{ hostname_vm.stdout }}'
+   when: '"{{ hostname_vm.stdout }}" != "centos7-template.rmansur.com.br" and "{{ path_zabbix_agent_usr.stdout }}" == "/usr/local/zabbix/etc/zabbix_agentd.conf"'
+
+ - name: Start Zabbix Agent Systemd
+   systemd:
+     state: started
+     enabled: yes
+     name: zabbix-agent
+   ignore_errors: yes
+   failed_when: false
+
+ - name: Zabbix Agent Service - Loading...
+   command: sleep 30
+   ignore_errors: yes
+   failed_when: false
+ 
+ - name: Get Status Zabbix Agent Systemd
+   systemd:
+     state: started
+     name: zabbix-agent
+   register: status_zabbix_agent_service_systemd
+   ignore_errors: yes
+   failed_when: false
+
+ - name: Return Status Zabbix Agent Service Output - Systemd
+   debug:
+     msg: "{{ status_zabbix_agent_service_systemd.status.ActiveState }}"
+   ignore_errors: yes
+   failed_when: false
+
+ 
+...

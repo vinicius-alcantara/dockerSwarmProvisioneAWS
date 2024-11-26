@@ -1,0 +1,12 @@
+---
+# vars file for mountDiskData
+
+partition_number: 1
+file_system_code: 20
+file_system_name: xfs
+mount_point: /var/lib/docker
+options_mount_point: defaults
+dir_script: /usr/local/scripts
+script_path: /usr/local/scripts/mountDiskData.j2
+
+

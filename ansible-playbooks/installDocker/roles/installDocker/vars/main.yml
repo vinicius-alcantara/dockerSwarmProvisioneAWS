@@ -1,0 +1,7 @@
+---
+# vars file for installDocker
+
+repo_docker: "https://download.docker.com/linux/rhel/docker-ce.repo"
+repo_compose: "https://github.com/docker/compose/releases/latest/download/docker-compose-Linux-x86_64"
+src_path_compose: "/usr/local/bin/docker-compose"
+dst_path_compose: "/usr/bin/docker-compose"

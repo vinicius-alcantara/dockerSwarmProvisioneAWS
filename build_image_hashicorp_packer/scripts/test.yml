@@ -1,0 +1,9 @@
+ - name: Update Linux OS - Swarm Nodes
+   hosts: all
+   remote_user: ec2-user
+   become: yes
+   tasks:
+   
+     - name: Lista o Hostname
+       shell: echo $HOSTNAME >> /hostname.txt
+       when: ansible_os_family == "RedHat"

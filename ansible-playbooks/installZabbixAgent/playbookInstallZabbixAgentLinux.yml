@@ -1,0 +1,10 @@
+---
+
+ - name: Install Zabbix Agent
+   hosts:
+     - swarm_nodes_manager
+     - swarm_nodes_worker
+   roles:
+     - installZabbixAgent
+
+...

@@ -1,0 +1,8 @@
+---
+# tasks file for mountDiskData
+
+ - name: Mount Disk Data
+   include_tasks: mountDiskData.yml
+   tags: mountDiskData
+
+...

@@ -1,0 +1,45 @@
+---
+ 
+ - name: Dependencie Install (yum-utils)
+   yum:
+     name: yum-utils
+     state: present
+   when: ansible_os_family == "RedHat"
+
+#  - name: Configure Docker Repository
+#    shell: yum-config-manager --add-repo "{{ repo_docker }}"
+#    when: ansible_os_family == "RedHat"
+
+ - name: Docker Install
+   yum:
+     name: ['docker']
+     state: present
+   when: ansible_os_family == "RedHat"
+
+ - name: Docker Compose - Download
+   ansible.builtin.get_url:
+     url: "{{ repo_compose }}"
+     dest: "{{ src_path_compose }}"
+     mode: '0750'
+   when: ansible_os_family == "RedHat"
+
+ - name: Grant Exec Permission
+   ansible.builtin.file:
+     path: "{{ src_path_compose }}"
+     mode: '0750'
+     state: file
+   when: ansible_os_family == "RedHat"
+
+ - name: Create Simbolic Link - docker-compose
+   ansible.builtin.file:
+     src: "{{ src_path_compose }}"
+     dest: "{{ dst_path_compose }}"
+     state: link
+
+ - name: Start and Enable Docker Service in Boot System
+   systemd:
+     name: docker
+     state: started
+     enabled: true
+   when: ansible_os_family == "RedHat"
+

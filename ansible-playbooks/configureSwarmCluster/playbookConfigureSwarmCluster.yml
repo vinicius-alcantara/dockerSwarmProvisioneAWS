@@ -1,0 +1,45 @@
+---
+
+- name: Configure Swarm Cluster - Manager Node 1
+  hosts: node-manager-1
+  tasks:
+
+    - name: Init Swarm Mode - Cluster
+      shell: docker swarm init --advertise-addr {{ private_ip_manager_1 }} #$INTERNAL_IP_NODE_MANAGER_1
+      when: ansible_os_family == "RedHat"
+
+    - name: Get Token Manager
+      shell: docker swarm join-token manager | egrep "docker" | sed 's/^[ \t]*//' | cut -d " " -f5
+      register: token_manager_node
+      when: ansible_os_family == "RedHat"
+
+    - name: Set global token for manager
+      set_fact:
+        global_token_manager_node: "{{ token_manager_node.stdout }}"
+      when: ansible_os_family == "RedHat"
+
+    - name: Get Token Worker
+      shell: docker swarm join-token worker | egrep "docker" | sed 's/^[ \t]*//' | cut -d " " -f5
+      register: token_worker_node
+      when: ansible_os_family == "RedHat"
+
+    - name: Set global token for worker
+      set_fact:
+        global_token_worker_node: "{{ token_worker_node.stdout }}"
+      when: ansible_os_family == "RedHat"
+
+- name: Configure Swarm Cluster - Manager Nodes 2 and 3
+  hosts:
+    - node-manager-2
+    - node-manager-3
+  tasks:
+    - name: Add manager nodes to Swarm Cluster
+      shell: docker swarm join --token "{{ hostvars['node-manager-1'].global_token_manager_node }}" {{ private_ip_manager_1 }}:2377 #10.0.4.127:2377 #$INTERNAL_IP_NODE_MANAGER_1
+      when: ansible_os_family == "RedHat"
+
+- name: Configure Swarm Cluster - Worker Nodes
+  hosts: swarm_nodes_worker
+  tasks:
+    - name: Add worker nodes to Swarm Cluster
+      shell: docker swarm join --token "{{ hostvars['node-manager-1'].global_token_worker_node }}" {{ private_ip_manager_1 }}:2377 #10.0.4.127:2377 #$INTERNAL_IP_NODE_MANAGER_1
+      when: ansible_os_family == "RedHat"

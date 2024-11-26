@@ -1,0 +1,53 @@
+---
+
+ - name: Update Linux OS - Swarm Nodes
+   hosts: all
+   remote_user: ec2-user
+   become: yes
+   tasks:
+   
+     - name: Os release
+       shell: sed -n '1p;2p;$p' /etc/os-release
+       register: os_old_release
+       when: ansible_os_family == "RedHat"
+
+     - name: Kernel Version
+       shell: uname -r
+       register: kernel_old_version
+       when: ansible_os_family == "RedHat"
+
+     - debug:
+         msg: "Os release: {{ os_old_release.stdout }}  | Kernel Version: {{ kernel_old_version.stdout }}"
+       when: ansible_os_family == "RedHat"
+
+     - name: Update OS
+       yum:
+         name: "*"
+         state: latest
+         update_cache: yes
+       when: ansible_os_family == "RedHat"
+
+     - name: System Reboot
+       reboot:
+       ignore_errors: yes
+       when: ansible_os_family == "RedHat"
+
+     - name: Removing Old Kernels
+       command: package-cleanup --oldkernels --count=1 -y
+       when: ansible_os_family == "RedHat"
+
+     - name: Os release
+       shell: sed -n '1p;2p;$p' /etc/os-release
+       register: os_new_release
+       when: ansible_os_family == "RedHat"
+
+     - name: Kernel Version
+       shell: uname -r
+       register: kernel_new_version
+       when: ansible_os_family == "RedHat"
+   
+     - debug:
+         msg: "Os release: {{ os_new_release.stdout }} | Kernel Version: {{ kernel_new_version.stdout }}"
+       when: ansible_os_family == "RedHat"
+
+...

@@ -1,0 +1,38 @@
+[bastion]
+bastion-1 ansible_host=public_ip_bastion
+ 
+[swarm_nodes_manager]
+node-manager-1 ansible_host=private_ip_manager_1
+node-manager-2 ansible_host=private_ip_manager_2
+node-manager-3 ansible_host=private_ip_manager_3
+
+[swarm_nodes_worker]
+node-worker-1 ansible_host=private_ip_worker_1
+node-worker-2 ansible_host=private_ip_worker_2
+node-worker-3 ansible_host=private_ip_worker_3
+
+[bastion:vars]
+ansible_ssh_private_key_file='/home/marcus.alcantara/Downloads/devops-lab-bastion-host.pem'
+ansible_user=ec2-user
+ansible_become=yes
+ansible_become_method=sudo
+ansible_become_user=root
+ansible_python_interpreter=/usr/bin/python3
+
+[swarm_nodes_manager:vars]
+ansible_ssh_private_key_file='/home/marcus.alcantara/Downloads/my-key-instances-linux.pem'
+ansible_user=ec2-user
+ansible_ssh_common_args='-o ProxyCommand="ssh -i /home/marcus.alcantara/Downloads/devops-lab-bastion-host.pem -W %h:%p -q ec2-user@public_ip_bastion"'
+ansible_become=yes
+ansible_become_method=sudo
+ansible_become_user=root
+ansible_python_interpreter=/usr/bin/python3
+
+[swarm_nodes_worker:vars]
+ansible_ssh_private_key_file='/home/marcus.alcantara/Downloads/my-key-instances-linux.pem'
+ansible_user=ec2-user
+ansible_ssh_common_args='-o ProxyCommand="ssh -i /home/marcus.alcantara/Downloads/devops-lab-bastion-host.pem -W %h:%p -q ec2-user@public_ip_bastion"'
+ansible_become=yes
+ansible_become_method=sudo
+ansible_become_user=root
+ansible_python_interpreter=/usr/bin/python3

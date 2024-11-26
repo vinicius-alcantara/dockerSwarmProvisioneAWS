@@ -1,0 +1,8 @@
+---
+# tasks file for installDocker
+
+ - name: Docker Install
+   include_tasks: installDocker.yml
+   tags: installDocker
+
+...

@@ -1,0 +1,47 @@
+---
+ 
+ - name: Create Scripts Directory in VM Linux
+   file:
+     path: "{{ dir_script }}"
+     state: directory
+     mode: '0744'
+   tags:
+     - hardeningUbuntuOS
+   ignore_errors: yes
+   failed_when: false
+   when: ansible_os_family == "RedHat"
+
+ - name: Copy Script template
+   template:
+     src: mountDiskData.j2
+     dest: "{{ dir_script }}"
+     owner: root
+     group: root
+     mode: 0744
+   tags:
+     - mountDiskData
+   ignore_errors: yes
+   failed_when: false
+   when: ansible_os_family == "RedHat"
+
+ - name: Exec Mount Disk Script
+   command: bash "{{ script_path }}"
+   tags:
+     - mountDiskData      
+   ignore_errors: yes
+   failed_when: false
+   when: ansible_os_family == "RedHat"
+
+ - name: Remove Scripts Directory in VM Linux
+   file:
+     path: "{{ dir_script }}"
+     state: absent
+     mode: '0744'
+   tags:
+     - mountDiskData
+   ignore_errors: yes
+   failed_when: false
+   when: ansible_os_family == "RedHat"
+
+...
+

@@ -1,0 +1,56 @@
+#!/bin/bash
+
+#PATH_1="/dev/sda";
+#PATH_2="/dev/sdb";
+#PATH_3="/dev/sdc";
+PATH_1="/dev/xvda";
+PATH_2="/dev/xvdb";
+PATH_3="/dev/xvdc";
+MOUNTED_PATH1=$(mount | egrep -i "$PATH_1" | cut -d " " -f1 | tr -d "[0-9]" | uniq);
+MOUNTED_PATH2=$(mount | egrep -i "$PATH_2" | cut -d " " -f1 | tr -d "[0-9]" | uniq);
+MOUNTED_PATH3=$(mount | egrep -i "$PATH_3" | cut -d " " -f1 | tr -d "[0-9]" | uniq);
+
+if [ "$PATH_1" != "$MOUNTED_PATH1" ];
+then
+      DISK_PATH=$(echo "$PATH_1");
+elif [ "$PATH_2" != "$MOUNTED_PATH2" ];
+then
+      DISK_PATH=$(echo "$PATH_2");
+elif [ "$PATH_3" != "$MOUNTED_PATH3" ];
+then
+      DISK_PATH=$(echo "$PATH_3");
+fi
+
+function create_partition(){
+
+  fdisk "$DISK_PATH" << FDISK_CMDS
+    g
+    n
+    {{ partition_number }}
+
+
+    t
+    {{ file_system_code }}
+    wq!
+FDISK_CMDS
+
+}
+
+function format_partition(){
+
+  mkfs.{{ file_system_name }} "$DISK_PATH"{{ partition_number }}
+
+}
+
+function mount_disk(){
+
+  mkdir {{ mount_point }}
+  UUID_DISK=$(blkid "$DISK_PATH"{{ partition_number }} | cut -d "=" -f2 | cut -d " " -f1 | tr -d '"');
+  echo "UUID=$UUID_DISK"       {{ mount_point }}        {{ file_system_name }}   {{ options_mount_point }}       0 1 >> /etc/fstab
+  mount -a
+
+}
+
+create_partition;
+format_partition;
+mount_disk;
