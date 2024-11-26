@@ -3,9 +3,9 @@
 #PATH_1="/dev/sda";
 #PATH_2="/dev/sdb";
 #PATH_3="/dev/sdc";
-PATH_1="/dev/xvda";
-PATH_2="/dev/xvdb";
-PATH_3="/dev/xvdc";
+PATH_1="/dev/xvdb";
+#PATH_2="/dev/xvdc";
+#PATH_3="/dev/xvdd";
 MOUNTED_PATH1=$(mount | egrep -i "$PATH_1" | cut -d " " -f1 | tr -d "[0-9]" | uniq);
 MOUNTED_PATH2=$(mount | egrep -i "$PATH_2" | cut -d " " -f1 | tr -d "[0-9]" | uniq);
 MOUNTED_PATH3=$(mount | egrep -i "$PATH_3" | cut -d " " -f1 | tr -d "[0-9]" | uniq);
@@ -13,12 +13,13 @@ MOUNTED_PATH3=$(mount | egrep -i "$PATH_3" | cut -d " " -f1 | tr -d "[0-9]" | un
 if [ "$PATH_1" != "$MOUNTED_PATH1" ];
 then
       DISK_PATH=$(echo "$PATH_1");
-elif [ "$PATH_2" != "$MOUNTED_PATH2" ];
-then
-      DISK_PATH=$(echo "$PATH_2");
-elif [ "$PATH_3" != "$MOUNTED_PATH3" ];
-then
-      DISK_PATH=$(echo "$PATH_3");
+
+#elif [ "$PATH_2" != "$MOUNTED_PATH2" ];
+#then
+#      DISK_PATH=$(echo "$PATH_2");
+#elif [ "$PATH_3" != "$MOUNTED_PATH3" ];
+#then
+#      DISK_PATH=$(echo "$PATH_3");
 fi
 
 function create_partition(){

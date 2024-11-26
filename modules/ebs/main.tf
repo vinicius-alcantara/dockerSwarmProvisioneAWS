@@ -7,7 +7,8 @@ resource "aws_ebs_volume" "this" {
 
 resource "aws_volume_attachment" "this" {
   count        = length(var.instance_ids)
-  device_name  = "/dev/sd${element(["b", "c", "d", "e"], count.index % 4)}"
+  #device_name  = "/dev/sd${element(["b", "c", "d"], count.index % 3)}"
+  device_name  = "/dev/sdb"
   volume_id    = aws_ebs_volume.this[count.index].id
   instance_id  = var.instance_ids[count.index]
   force_detach = true
